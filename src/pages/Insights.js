@@ -9,7 +9,7 @@ const Insights = () => {
   const handlePredict = async () => {
     setLoading(true);
     try {
-      const res = await API.post("/predictions", { symbol });
+      const res = await API.post("/predict", { symbol });
       setPrediction(res.data);
     } catch (err) {
       console.error(err);

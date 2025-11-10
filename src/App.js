@@ -6,7 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
 
 function App() {
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
+  const [setUser] = useState(null);
 
   return (
     <Router>
