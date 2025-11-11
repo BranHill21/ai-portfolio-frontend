@@ -12,7 +12,7 @@ const LoginPage = ({ onLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post("/users/login", form);
+      const res = await API.post("/api/users/login", form);
       setMessage("Login successful!");
       onLogin(res.data.username);
     } catch (err) {

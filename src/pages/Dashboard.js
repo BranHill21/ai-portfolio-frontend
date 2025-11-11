@@ -7,7 +7,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAssets = async () => {
       try {
-        const res = await API.get("/assets");
+        const res = await API.get("/api/assets");
         setAssets(res.data);
       } catch (err) {
         console.error("Failed to fetch assets:", err);
