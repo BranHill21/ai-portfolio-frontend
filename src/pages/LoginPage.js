@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import API from "../api";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = ({ onLogin }) => {
   const [form, setForm] = useState({ username: "", password: "" });
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -15,7 +17,9 @@ const LoginPage = ({ onLogin }) => {
       const res = await API.post("/api/users/login", form);
       setMessage("Login successful!");
       onLogin(res.data.username);
+      navigate("/dashboard");
     } catch (err) {
+      console.error("Login error:", err);
       setMessage("Login failed. Please check credentials.");
     }
   };

@@ -7,15 +7,14 @@ import Insights from "./pages/Insights";
 import TestPage from "./pages/TestPage";
 
 function App() {
-  // const [user, setUser] = useState(null);
-  const [setUser] = useState(null);
+  const [user, setUser] = useState(null);
 
   return (
     <Router>
       <NavBar />
       <Routes>
         <Route path="/" element={<LoginPage onLogin={setUser} />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard user={user} />} />
         <Route path="/insights" element={<Insights />} />
         <Route path="/testpage" element={<TestPage />} />
       </Routes>
