@@ -39,7 +39,7 @@ const Dashboard = ({ user }) => {
             <tr>
               <th>Symbol</th>
               <th>Quantity</th>
-              <th>Average Cost</th>
+              <th>Buy Price</th>
             </tr>
           </thead>
           <tbody>
@@ -47,7 +47,7 @@ const Dashboard = ({ user }) => {
               <tr key={asset.id}>
                 <td>{asset.symbol}</td>
                 <td>{asset.quantity}</td>
-                <td>${asset.averageCost}</td>
+                <td>${asset.buyPrice}</td>
               </tr>
             ))}
           </tbody>

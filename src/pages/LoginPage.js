@@ -16,7 +16,7 @@ const LoginPage = ({ onLogin }) => {
     try {
       const res = await API.post("/api/users/login", form);
       setMessage("Login successful!");
-      onLogin(res.data.username);
+      onLogin(res.data);
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);

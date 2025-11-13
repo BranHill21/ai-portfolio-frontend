@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import API from "../api";
 
-const Insights = () => {
+const Insights = ({ user }) => {
   const [symbol, setSymbol] = useState("");
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -15,6 +15,22 @@ const Insights = () => {
       console.error(err);
     }
     setLoading(false);
+  };
+
+  const addAsset = async () => {
+    try {
+      const res = await API.post("/api/assets/addAsset", {
+        symbol: prediction.symbol,
+        buyPrice: prediction.current_price,
+        quantity: 1, // or user input
+        userId: user.id,
+      });
+      alert("Asset added: " + res);
+    } catch (err) {
+      alert(user.id);
+      console.error(err);
+      alert("Failed to add asset");
+    }
   };
 
   return (
@@ -35,6 +51,13 @@ const Insights = () => {
           <p>Price Change: {prediction.price_change}%</p>
           <p>Sentiment: {prediction.sentiment}</p>
           <h4>Recommendation: {prediction.recommendation}</h4>
+          {user.id ? (<>
+          <button onClick={addAsset} >Add to your assets</button>
+          </>) 
+          : (<>
+          <p>Logging in will allow you to track various assets.</p>
+          </>)}
+          
         </div>
       )}
     </div>

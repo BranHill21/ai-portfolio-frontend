@@ -7,7 +7,7 @@ const NavBar = () => {
       <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/">Login</Link>
       <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/dashboard">Dashboard</Link>
       <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/insights">Insights</Link>
-      <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/testpage">TestPage</Link>
+      {/* <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/testpage">TestPage</Link> */}
     </nav>
   );
 };
