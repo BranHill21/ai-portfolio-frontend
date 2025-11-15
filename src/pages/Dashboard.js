@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Dropdown from 'react-bootstrap/Dropdown';
 import API from "../api";
 
 const Dashboard = ({ user }) => {
@@ -34,24 +35,39 @@ const Dashboard = ({ user }) => {
       )}
 
       {assets.length > 0 ? (
-        <table border="1" cellPadding="8">
-          <thead>
-            <tr>
-              <th>Symbol</th>
-              <th>Quantity</th>
-              <th>Buy Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {assets.map((asset) => (
-              <tr key={asset.id}>
-                <td>{asset.symbol}</td>
-                <td>{asset.quantity}</td>
-                <td>${asset.buyPrice}</td>
+        <div>
+          <table border="1" cellPadding="8">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Quantity</th>
+                <th>Buy Price</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {assets.map((asset) => (
+                <tr key={asset.id}>
+                  <td>{asset.symbol}</td>
+                  <td>{asset.quantity}</td>
+                  <td>${asset.buyPrice}</td>
+                  <td><Dropdown>
+                        <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                          Manage
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                          <Dropdown.Item href="#/action-1">Update Quantity</Dropdown.Item>
+                          <Dropdown.Item href="#/action-2">Delete</Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+        </div>
       ) : (
         <p>No assets found for this user.</p>
       )}
