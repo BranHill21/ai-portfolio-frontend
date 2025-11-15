@@ -51,7 +51,7 @@ const Insights = ({ user }) => {
           <p>Price Change: {prediction.price_change}%</p>
           <p>Sentiment: {prediction.sentiment}</p>
           <h4>Recommendation: {prediction.recommendation}</h4>
-          {user.id ? (<>
+          {user != null ? (<>
           <button onClick={addAsset} >Add to your assets</button>
           </>) 
           : (<>
