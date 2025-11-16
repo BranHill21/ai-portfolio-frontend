@@ -1,15 +1,34 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const NavBar = () => {
+export default function NavBar({ user, setUser, setAssets }) {
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.clear();
+    setUser(null);
+    setAssets(null);
+    navigate("/");
+  };
+
   return (
-    <nav style={{ padding: "1rem", background: "#20232a", color: "#61dafb" }}>
-      <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/">Login</Link>
-      <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/dashboard">Dashboard</Link>
-      <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/insights">Insights</Link>
-      {/* <Link style={{ marginRight: "1rem", color: "#61dafb" }} to="/testpage">TestPage</Link> */}
+    <nav style={{ padding: "1rem", background: "#252629ff" }}>
+      <Link to="/dashboard" style={{ marginRight: "1rem" }}>Dashboard</Link>
+      <Link to="/insights" style={{ marginRight: "1rem" }}>Insights</Link>
+
+      {!user && (
+        <>
+          <Link to="/" style={{ marginRight: "1rem" }}>Login</Link>
+          <Link to="/register" style={{ marginRight: "1rem" }}>Register</Link>
+        </>
+      )}
+
+      {user && (
+        <>
+          <span style={{ marginRight: "1rem" }}>Hi, {user.username}</span>
+          <button onClick={logout}>Logout</button>
+        </>
+      )}
     </nav>
   );
-};
-
-export default NavBar;
+}

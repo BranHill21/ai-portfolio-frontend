@@ -25,7 +25,8 @@ const Insights = ({ user }) => {
         quantity: 1, // or user input
         userId: user.id,
       });
-      alert("Asset added: " + res);
+      localStorage.removeItem("assets_expires");
+      console.log("Asset added: " + res);
     } catch (err) {
       alert(user.id);
       console.error(err);
