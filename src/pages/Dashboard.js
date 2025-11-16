@@ -1,33 +1,43 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { Modal, Button, Alert, Form } from "react-bootstrap";
 
 const Dashboard = ({ user, assets, setAssets }) => {
   const [loading, setLoading] = useState(false);
 
-  // ---------- MODAL STATES ----------
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // ---------- Search + Pagination ----------
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
 
-  const [currentAsset, setCurrentAsset] = useState(null);
+  const filteredAssets = assets
+    ? assets.filter((a) =>
+        a.symbol.toLowerCase().includes(search.toLowerCase())
+      )
+    : [];
 
-  // Update fields
-  const [newQuantity, setNewQuantity] = useState("");
-  const [newBuyPrice, setNewBuyPrice] = useState("");
+  const totalPages = Math.ceil(filteredAssets.length / pageSize);
+  const paginatedAssets = filteredAssets.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
 
-  // Alerts
-  const [alert, setAlert] = useState(null);
+  // ---------- Alerts ----------
+  const [alert, setAlert] = useState({ message: "", type: "", show: false });
 
-  // ---------- FUNCTIONS FOR ALERTS ----------
-  const pushAlert = (msg, variant = "success") => {
-    setAlert({ msg, variant });
-
-    setTimeout(() => {
-      setAlert(null);
-    }, 3000);
+  const showAlert = (message, type = "success") => {
+    setAlert({ message, type, show: true });
+    setTimeout(() => setAlert({ show: false }), 3000); // Auto dismiss
   };
 
-  // ---------------- FETCH ASSETS ----------------
+  // ---------- Modal States ----------
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [activeAsset, setActiveAsset] = useState(null);
+  const [newQuantity, setNewQuantity] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+
+  // ---------- Fetch Assets ----------
   useEffect(() => {
     if (!user) return;
 
@@ -48,189 +58,183 @@ const Dashboard = ({ user, assets, setAssets }) => {
     fetchAssets();
   }, [user, assets, setAssets]);
 
-  // -------------- OPEN UPDATE MODAL --------------
-  const beginUpdate = (asset) => {
-    setCurrentAsset(asset);
+  // ---------- Open Update Modal ----------
+  const openUpdateModal = (asset) => {
+    setActiveAsset(asset);
     setNewQuantity(asset.quantity);
-    setNewBuyPrice(asset.buyPrice);
+    setNewPrice(asset.buyPrice);
     setShowUpdateModal(true);
   };
 
+  // ---------- Open Delete Modal ----------
+  const openDeleteModal = (asset) => {
+    setActiveAsset(asset);
+    setShowDeleteModal(true);
+  };
+
   // ---------------- UPDATE ASSET ----------------
-  const handleUpdate = async () => {
+  const confirmUpdate = async () => {
     try {
       const updated = {
-        ...currentAsset,
+        ...activeAsset,
         quantity: Number(newQuantity),
-        buyPrice: Number(newBuyPrice),
+        buyPrice: Number(newPrice),
       };
 
-      await API.put(`/api/assets/update/${currentAsset.id}`, updated);
+      await API.put(`/api/assets/update/${activeAsset.id}`, updated);
 
       const newList = assets.map((a) =>
-        a.id === currentAsset.id ? updated : a
+        a.id === activeAsset.id ? updated : a
       );
 
       setAssets(newList);
       setShowUpdateModal(false);
-      pushAlert("Asset updated successfully!");
+      showAlert("Asset updated successfully!");
     } catch (err) {
       console.error("Update failed:", err);
-      pushAlert("Update failed!", "danger");
+      showAlert("Update failed", "danger");
     }
   };
 
-  // -------------- OPEN DELETE MODAL --------------
-  const beginDelete = (asset) => {
-    setCurrentAsset(asset);
-    setShowDeleteModal(true);
-  };
-
   // ---------------- DELETE ASSET ----------------
-  const handleDelete = async () => {
+  const confirmDelete = async () => {
     try {
-      await API.delete(`/api/assets/delete/${currentAsset.id}`);
+      await API.delete(`/api/assets/delete/${activeAsset.id}`);
 
-      const newList = assets.filter((a) => a.id !== currentAsset.id);
+      const newList = assets.filter((a) => a.id !== activeAsset.id);
       setAssets(newList);
 
       setShowDeleteModal(false);
-      pushAlert("Asset deleted successfully!");
+      showAlert("Asset deleted successfully!");
     } catch (err) {
       console.error("Delete failed:", err);
-      pushAlert("Delete failed!", "danger");
+      showAlert("Delete failed", "danger");
     }
   };
 
   if (!user) return <p>Please log in.</p>;
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Dashboard</h1>
-      <p>
-        Hello, <b>{user.username}</b>
-      </p>
+    <div className="container mt-4">
 
-      {/* Bootstrap Alert */}
-      {alert && (
-        <div className={`alert alert-${alert.variant} alert-dismissible fade show`} role="alert">
-          {alert.msg}
-          <button type="button" className="btn-close" onClick={() => setAlert(null)}></button>
-        </div>
+      {/* Alerts */}
+      {alert.show && (
+        <Alert variant={alert.type} dismissible onClose={() => setAlert({ show: false })}>
+          {alert.message}
+        </Alert>
       )}
+
+      <h1>Dashboard</h1>
+      <p>Hello, <b>{user.username}</b></p>
+
+      {/* Search */}
+      <Form.Control
+        placeholder="Search assets..."
+        className="mb-3"
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setPage(1);
+        }}
+      />
 
       {loading && <p>Loading assets...</p>}
 
-      {!loading && assets && assets.length > 0 ? (
-        <table className="table table-bordered mt-3">
-          <thead className="table-dark">
-            <tr>
-              <th>Symbol</th>
-              <th>Quantity</th>
-              <th>Buy Price</th>
-              <th></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {assets.map((asset) => (
-              <tr key={asset.id}>
-                <td>{asset.symbol}</td>
-                <td>{asset.quantity}</td>
-                <td>${asset.buyPrice}</td>
-                <td>
-                  <button className="btn btn-primary btn-sm me-2" onClick={() => beginUpdate(asset)}>
-                    Update
-                  </button>
-                  <button className="btn btn-danger btn-sm" onClick={() => beginDelete(asset)}>
-                    Delete
-                  </button>
-                </td>
+      {!loading && paginatedAssets.length > 0 ? (
+        <>
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Qty</th>
+                <th>Buy Price</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {paginatedAssets.map((asset) => (
+                <tr key={asset.id}>
+                  <td>{asset.symbol}</td>
+                  <td>{asset.quantity}</td>
+                  <td>${asset.buyPrice}</td>
+                  <td>
+                    <Button size="sm" onClick={() => openUpdateModal(asset)}>
+                      Update
+                    </Button>{" "}
+                    <Button size="sm" variant="danger" onClick={() => openDeleteModal(asset)}>
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="d-flex justify-content-between">
+            <Button disabled={page <= 1} onClick={() => setPage(page - 1)}>
+              Previous
+            </Button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+              Next
+            </Button>
+          </div>
+        </>
       ) : (
         <p>No assets found.</p>
       )}
 
-      {/* ---------------- UPDATE MODAL ---------------- */}
-      {showUpdateModal && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
+      {/* ------------------- UPDATE MODAL ------------------- */}
+      <Modal show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Asset</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-2">
+            <label>Quantity</label>
+            <Form.Control
+              type="number"
+              value={newQuantity}
+              onChange={(e) => setNewQuantity(e.target.value)}
+            />
+          </Form.Group>
 
-              <div className="modal-header">
-                <h5 className="modal-title">Update Asset</h5>
-                <button className="btn-close" onClick={() => setShowUpdateModal(false)}></button>
-              </div>
+          <Form.Group>
+            <label>Buy Price</label>
+            <Form.Control
+              type="number"
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowUpdateModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={confirmUpdate}>Save</Button>
+        </Modal.Footer>
+      </Modal>
 
-              <div className="modal-body">
-                <label>Quantity</label>
-                <input
-                  type="number"
-                  className="form-control mb-3"
-                  value={newQuantity}
-                  onChange={(e) => setNewQuantity(e.target.value)}
-                />
-
-                <label>Buy Price</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={newBuyPrice}
-                  onChange={(e) => setNewBuyPrice(e.target.value)}
-                />
-              </div>
-
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setShowUpdateModal(false)}>
-                  Cancel
-                </button>
-                <button className="btn btn-primary" onClick={handleUpdate}>
-                  Save Changes
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ---------------- DELETE CONFIRM MODAL ---------------- */}
-      {showDeleteModal && (
-        <div className="modal fade show d-block" tabIndex="-1" role="dialog">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-
-              <div className="modal-header">
-                <h5 className="modal-title">Confirm Delete</h5>
-                <button className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
-              </div>
-
-              <div className="modal-body">
-                <p>Are you sure you want to delete <b>{currentAsset.symbol}</b>?</p>
-              </div>
-
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>
-                  Cancel
-                </button>
-                <button className="btn btn-danger" onClick={handleDelete}>
-                  Delete
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal backdrop (greys out background) */}
-      {(showUpdateModal || showDeleteModal) && (
-        <div className="modal-backdrop fade show"></div>
-      )}
-
+      {/* ------------------- DELETE MODAL ------------------- */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Asset</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete {activeAsset?.symbol}?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
