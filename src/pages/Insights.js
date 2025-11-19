@@ -165,26 +165,26 @@ const Insights = ({ user }) => {
             <li>Exchange: {prediction.fundamentals?.exchange}</li>
           </ul>
 
-          <h4 className="mt-3">Technical Indicators (Latest)</h4>
+          {/* <h4 className="mt-3">Technical Indicators (Latest)</h4>
           <ul>
             <li>RSI 14: {prediction.chart?.rsi_14}</li>
             <li>SMA 7: {prediction.chart?.sma_7}</li>
             <li>SMA 20: {prediction.chart?.sma_20}</li>
             <li>EMA 20: {prediction.chart?.ema_20}</li>
-            {/* <li>MACD: {prediction.chart?.macd}</li>
-            <li>MACD Signal: {prediction.chart?.macd_signal}</li> */}
+            <li>MACD: {prediction.chart?.macd}</li>
+            <li>MACD Signal: {prediction.chart?.macd_signal}</li>
             <li>MACD Hist: {prediction.chart?.macd_hist}</li>
-            {/* <li>Stoch %K: {prediction.chart?.stoch_k}</li>
+            <li>Stoch %K: {prediction.chart?.stoch_k}</li>
             <li>Stoch %D: {prediction.chart?.stoch_d}</li>
-            <li>Bollinger Mid: {prediction.chart?.bb_mid}</li> */}
+            <li>Bollinger Mid: {prediction.chart?.bb_mid}</li>
             <li>Bollinger Upper: {prediction.chart?.bb_upper}</li>
             <li>Bollinger Lower: {prediction.chart?.bb_lower}</li>
-            {/* <li>ATR 14: {prediction.chart?.atr_14}</li>
+            <li>ATR 14: {prediction.chart?.atr_14}</li>
             <li>Volume: {prediction.chart?.vol}</li>
-            <li>20-day Vol Avg: {prediction.chart?.vol_mean_20}</li> */}
-          </ul>
+            <li>20-day Vol Avg: {prediction.chart?.vol_mean_20}</li>
+          </ul> */}
 
-          <h4 className="mt-3">Candlestick Patterns</h4>
+          {/* <h4 className="mt-3">Candlestick Patterns</h4>
           {prediction.patterns?.length > 0 ? (
             <ul>
               {prediction.short_term.candlestick_patterns.map((p, idx) => (
@@ -193,7 +193,7 @@ const Insights = ({ user }) => {
             </ul>
           ) : (
             <p>No major patterns detected.</p>
-          )}
+          )} */}
 
           <h4 className="mt-3">7-Day Forecast</h4>
           <ul>
@@ -202,6 +202,7 @@ const Insights = ({ user }) => {
             ))}
           </ul>
 
+          {/* BB + Close */}
           {prediction?.chart && (
             <div className="mt-4">
               <h4>Price Chart (Close + Bollinger Bands)</h4>
@@ -243,6 +244,104 @@ const Insights = ({ user }) => {
                     stroke="#dc3545"
                     dot={false}
                     name="Bollinger Lower"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* EMA 20 + Close */}
+          {prediction?.chart && (
+            <div className="mt-4">
+              <h4>Price Chart (Close + EMA 20)</h4>
+
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={prediction.chart.dates.map((date, i) => ({
+                    date,
+                    close: prediction.chart.close[i],
+                    ema_20: prediction.chart.ema_20[i],
+                    // bb_lower: prediction.chart.bb_lower[i],
+                  }))}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" hide={true} />
+                  <YAxis domain={['auto', 'auto']} />
+                  <Tooltip />
+                  <Legend />
+
+                  <Line
+                    type="monotone"
+                    dataKey="close"
+                    stroke="#007bff"
+                    dot={false}
+                    name="Close"
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="ema_20"
+                    stroke="#28a745"
+                    dot={false}
+                    name="EMA 20"
+                  />
+{/* 
+                  <Line
+                    type="monotone"
+                    dataKey="bb_lower"
+                    stroke="#dc3545"
+                    dot={false}
+                    name="Bollinger Lower"
+                  /> */}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* RSI 14 */}
+          {prediction?.chart && (
+            <div className="mt-4">
+              <h4>Price Chart (RSI 14)</h4>
+
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={prediction.chart.dates.map((date, i) => ({
+                    date,
+                    // close: prediction.chart.close[i],
+                    zone_high: 70,
+                    rsi_14: prediction.chart.rsi_14[i],
+                    zone_low: 30,
+                    // bb_lower: prediction.chart.bb_lower[i],
+                  }))}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" hide={true} />
+                  <YAxis domain={['auto', 'auto']} />
+                  <Tooltip />
+                  <Legend />
+
+                  <Line
+                    type="monotone"
+                    dataKey="zone_high"
+                    stroke="#007bff"
+                    dot={false}
+                    name="Overbought zone >"
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="rsi_14"
+                    stroke="#28a745"
+                    dot={false}
+                    name="RSI 14"
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="zone_low"
+                    stroke="#dc3545"
+                    dot={false}
+                    name="oversold zone <"
                   />
                 </LineChart>
               </ResponsiveContainer>
