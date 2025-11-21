@@ -6,6 +6,7 @@ import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
 import TestPage from "./pages/TestPage";
+import Landing from "./pages/Landing";
 
 function App() {
   // ------------------ USER STATE ------------------
@@ -67,7 +68,8 @@ function App() {
       <NavBar user={user} setUser={setUser} setAssets={setAssets} />
 
       <Routes>
-        <Route path="/" element={<LoginPage onLogin={setUser} />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<LoginPage onLogin={setUser} />} />
         <Route path="/register" element={<RegisterPage />} />
 
         <Route
