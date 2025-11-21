@@ -1,6 +1,7 @@
+// Insights.jsx
 import React, { useState } from "react";
 import API from "../api";
-import { Alert, Button, Form } from "react-bootstrap";
+import { Alert, Button, Form, Collapse } from "react-bootstrap";
 import {
   LineChart,
   Line,
@@ -9,36 +10,108 @@ import {
   Tooltip,
   Legend,
   CartesianGrid,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Bar
 } from "recharts";
+
+const safeNum = (v, fallback = null) => {
+  if (v === undefined || v === null || Number.isNaN(Number(v))) return fallback;
+  return Number(v);
+};
+
+const buildChartData = (chart) => {
+  // construct data array safely using the shortest array length we have
+  if (!chart || !chart.dates) return [];
+  const dates = chart.dates || [];
+  // determine best length available using known arrays (close is preferred)
+  const lengths = [
+    dates.length,
+    chart.close?.length || 0,
+    chart.bb_upper?.length || 0,
+    chart.bb_lower?.length || 0,
+    chart.ema_20?.length || 0,
+    chart.rsi_14?.length || 0,
+    chart.macd?.length || 0,
+    chart.macd_signal?.length || 0,
+    chart.macd_hist?.length || 0,
+    chart.vol?.length || 0,
+    chart.vol_mean_20?.length || 0,
+    chart.sma_7?.length || 0,
+    chart.sma_20?.length || 0
+  ];
+  const minLen = Math.max(0, Math.min(...lengths.filter((n) => n > 0)));
+  const useLen = minLen > 0 ? minLen : dates.length;
+
+  const data = [];
+  for (let i = 0; i < useLen; i++) {
+    data.push({
+      date: dates[i] || `i${i}`,
+      close: safeNum(chart.close?.[i]),
+      bb_upper: safeNum(chart.bb_upper?.[i]),
+      bb_lower: safeNum(chart.bb_lower?.[i]),
+      ema_20: safeNum(chart.ema_20?.[i]),
+      rsi_14: safeNum(chart.rsi_14?.[i]),
+      macd: safeNum(chart.macd?.[i]),
+      macd_signal: safeNum(chart.macd_signal?.[i]),
+      macd_hist: safeNum(chart.macd_hist?.[i]),
+      vol: safeNum(chart.vol?.[i]),
+      vol_mean_20: safeNum(chart.vol_mean_20?.[i]),
+      sma_7: safeNum(chart.sma_7?.[i]),
+      sma_20: safeNum(chart.sma_20?.[i])
+    });
+  }
+  return data;
+};
+
+const ExplanationBlock = ({ title, children, open, onToggle }) => (
+  <div className="mt-2">
+    <Button
+      variant="link"
+      onClick={onToggle}
+      style={{ padding: 0, marginBottom: 8 }}
+    >
+      {open ? "Hide explanation ▲" : "What does this mean? ▼"}
+    </Button>
+    <Collapse in={open}>
+      <div
+        style={{
+          borderLeft: "3px solid #eee",
+          padding: "10px 14px",
+          background: "#fafafa",
+          borderRadius: 4,
+        }}
+      >
+        <h6 style={{ marginTop: 0 }}>{title}</h6>
+        <div style={{ fontSize: 14, lineHeight: 1.5 }}>{children}</div>
+      </div>
+    </Collapse>
+  </div>
+);
 
 const Insights = ({ user }) => {
   const [symbol, setSymbol] = useState("");
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState("");
-
-  // ---------- Alerts ----------
   const [alert, setAlert] = useState({ message: "", type: "", show: false });
+
+  // explanation toggles per chart
+  const [openBBExplain, setOpenBBExplain] = useState(false);
+  const [openEMAExplain, setOpenEMAExplain] = useState(false);
+  const [openRSIExplain, setOpenRSIExplain] = useState(false);
+  const [openMACDExplain, setOpenMACDExplain] = useState(false);
+  const [openVolExplain, setOpenVolExplain] = useState(false);
+  const [openShortExplain, setOpenShortExplain] = useState(false);
+  const [openLongExplain, setOpenLongExplain] = useState(false);
+  const [openFundExplain, setOpenFundExplain] = useState(false);
 
   const showAlert = (message, type = "success") => {
     setAlert({ message, type, show: true });
-
-    // Auto-dismiss after 3s
     setTimeout(() => {
       setAlert({ show: false });
     }, 3000);
   };
 
-  // ---------- Wake Backend First ----------
-  // const wakeBackend = async () => {
-  //   try {
-  //     // This should be a very fast and harmless endpoint
-  //     await API.get("/api/predict/ping");
-  //   } catch (err) {
-  //     console.error("Wake error:", err);
-  //   }
-  // };
   async function fetchWithRetry(fn, retries = 3, delay = 400) {
     try {
       return await fn();
@@ -49,20 +122,16 @@ const Insights = ({ user }) => {
     }
   }
 
-  const handlePredict = async () => {
+  const handlePredict = async (useSimple = false) => {
+    // same logic: call /predict (default) or /predict/simple if useSimple true
     setLoading(true);
     setPrediction(null);
 
     try {
-      // Step 1 Wake backend (no error if asleep)
-      // await wakeBackend();
-
-      // Step 2 Now make real prediction request
+      const endpoint = useSimple ? "/api/predict/simple" : "/api/predict";
       const res = await fetchWithRetry(() =>
-        API.post("/api/predict", { symbol })
+        API.post(endpoint, { symbol })
       );
-
-
       setPrediction(res.data);
       setQuantity("");
       showAlert("Prediction loaded successfully!");
@@ -88,9 +157,7 @@ const Insights = ({ user }) => {
         userId: user.id,
       });
 
-      // Invalidate cache ensures dashboard reloads latest assets
       localStorage.removeItem("assets_expires");
-
       console.log("Asset added:", res);
       showAlert("Asset added successfully!");
     } catch (err) {
@@ -99,9 +166,11 @@ const Insights = ({ user }) => {
     }
   };
 
+  // Prepare chart data safely when prediction exists
+  const chartData = prediction?.chart ? buildChartData(prediction.chart) : [];
+
   return (
     <div className="container mt-4">
-      {/* Alerts */}
       {alert.show && (
         <Alert
           variant={alert.type}
@@ -121,320 +190,342 @@ const Insights = ({ user }) => {
         placeholder="Enter Stock/Crypto Symbol (AAPL, BTC-USD)"
         className="mb-2"
       />
-      <Button onClick={handlePredict} disabled={!symbol || loading}>
-        {loading ? "Loading..." : "Get Prediction"}
-      </Button>
 
+      <div className="mb-3 d-flex gap-2">
+        {/* simple endpoint available to anyone */}
+        <Button
+          variant="outline-primary"
+          onClick={() => handlePredict(true)}
+          disabled={!symbol || loading}
+        >
+          {loading ? "Loading..." : "Get Simple Prediction"}
+        </Button>
+
+        {/* full /predict only for logged-in users */}
+        <Button
+          onClick={() => handlePredict(false)}
+          disabled={!symbol || loading || !user}
+          title={user ? "" : "Login required for full prediction"}
+        >
+          {loading ? "Loading..." : user ? "Get Full Prediction" : "Login to use full"}
+        </Button>
+      </div>
+
+      {/* SHOW PREDICTION */}
       {prediction && (
         <div style={{ marginTop: "2rem" }}>
-          <h3>{prediction.symbol}</h3>
-          <p><strong>Current Price:</strong> ${prediction.current_price}</p>
-          <p><strong>Total Change:</strong> {prediction.price_change_pct_history}%</p>
-          <p><strong>Sentiment Score:</strong> {prediction.short_term.sentiment_compound}</p>
+          <h3 style={{ marginBottom: 0 }}>
+            {prediction.symbol}{" "}
+            <small style={{ color: "#666", fontSize: 14 }}>
+              ${prediction.current_price?.toFixed?.(2) ?? prediction.current_price}
+            </small>
+          </h3>
 
-          <h4 className="mt-3">Short-Term Outlook</h4>
-          <p><strong>Recommendation:</strong> {prediction.short_term.recommendation}</p>
-          <p><strong>Score:</strong> {prediction.short_term.confidence}</p>
-          <p>{prediction.short_term.reasoning}</p>
-
-          <h4 className="mt-3">Long-Term Outlook (6-24 months)</h4>
-          <p><strong>Recommendation:</strong> {prediction.long_term?.recommendation}</p>
-          <p><strong>Score:</strong> {prediction.long_term?.score}</p>
-          <p>{prediction.long_term?.reasoning}</p>
-
-          <div className="mt-2">
-            <strong>Returns:</strong>
-            <ul>
-              <li>6-month return: {prediction.long_term?.returns?.six_month_return_pct}%</li>
-              <li>1-year return: {prediction.long_term?.returns?.one_year_return_pct}%</li>
-              <li>Overall period: {prediction.long_term?.returns?.full_period_return_pct}%</li>
-            </ul>
-            <p><strong>Annual Volatility:</strong> {prediction.long_term?.volatility_annual_pct}%</p>
+          <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 8 }}>
+            <div>
+              <strong>Total Change:</strong>{" "}
+              {prediction.price_change_pct_history ?? "N/A"}%
+            </div>
+            <div>
+              <strong>Short Sentiment:</strong>{" "}
+              {prediction.short_term?.sentiment_compound ?? prediction.short_term?.sentiment ?? "N/A"}
+            </div>
+            <div>
+              <strong>Short Recommendation:</strong>{" "}
+              {prediction.short_term?.recommendation ?? "N/A"}
+            </div>
+            <div>
+              <strong>Short Confidence:</strong>{" "}
+              {prediction.short_term?.confidence ?? prediction.short_term?.score ?? "N/A"}
+            </div>
           </div>
 
-          <h4 className="mt-3">Fundamentals</h4>
-          <ul>
-            <li>Company: {prediction.fundamentals?.shortName}</li>
-            <li>Market Cap: {prediction.fundamentals?.marketCap?.toLocaleString()}</li>
-            <li>Sector: {prediction.fundamentals?.sector}</li>
-            <li>Trailing PE: {prediction.fundamentals?.trailingPE}</li>
-            <li>Forward PE: {prediction.fundamentals?.forwardPE}</li>
-            <li>Dividend Yield: {prediction.fundamentals?.dividendYield}</li>
-            <li>Beta: {prediction.fundamentals?.beta}</li>
-            <li>Currency: {prediction.fundamentals?.currency}</li>
-            <li>Exchange: {prediction.fundamentals?.exchange}</li>
-          </ul>
+          {/* Short-term reasoning */}
+          <div className="mt-3">
+            <h5>Short-Term Reasoning</h5>
+            <p style={{ marginBottom: 6 }}>
+              {prediction.short_term?.reasoning ||
+                (Array.isArray(prediction.short_term?.reasoning)
+                  ? prediction.short_term.reasoning.join(", ")
+                  : prediction.short_term?.reasoning) ||
+                "No short-term reasoning available."}
+            </p>
 
-          {/* <h4 className="mt-3">Technical Indicators (Latest)</h4>
-          <ul>
-            <li>RSI 14: {prediction.chart?.rsi_14}</li>
-            <li>SMA 7: {prediction.chart?.sma_7}</li>
-            <li>SMA 20: {prediction.chart?.sma_20}</li>
-            <li>EMA 20: {prediction.chart?.ema_20}</li>
-            <li>MACD: {prediction.chart?.macd}</li>
-            <li>MACD Signal: {prediction.chart?.macd_signal}</li>
-            <li>MACD Hist: {prediction.chart?.macd_hist}</li>
-            <li>Stoch %K: {prediction.chart?.stoch_k}</li>
-            <li>Stoch %D: {prediction.chart?.stoch_d}</li>
-            <li>Bollinger Mid: {prediction.chart?.bb_mid}</li>
-            <li>Bollinger Upper: {prediction.chart?.bb_upper}</li>
-            <li>Bollinger Lower: {prediction.chart?.bb_lower}</li>
-            <li>ATR 14: {prediction.chart?.atr_14}</li>
-            <li>Volume: {prediction.chart?.vol}</li>
-            <li>20-day Vol Avg: {prediction.chart?.vol_mean_20}</li>
-          </ul> */}
+            <ExplanationBlock
+              title="Short-term recommendation explained"
+              open={openShortExplain}
+              onToggle={() => setOpenShortExplain(!openShortExplain)}
+            >
+              <p>
+                This is a *quick* view meant for the next few days. The service analyzes momentum
+                (recent price moves), momentum indicators like RSI and MACD, simple candlestick patterns,
+                and whether trading volume supports the move. A higher confidence means stronger alignment
+                between indicators.
+              </p>
+              <ul>
+                <li><strong>BUY</strong> — indicators lean upward.</li>
+                <li><strong>SELL</strong> — indicators lean downward.</li>
+                <li><strong>HOLD</strong> — mixed signals or uncertainty.</li>
+              </ul>
+              <p>Remember: short-term predictions are riskier — treat them as quick ideas, not guarantees.</p>
+            </ExplanationBlock>
+          </div>
 
-          {/* <h4 className="mt-3">Candlestick Patterns</h4>
-          {prediction.patterns?.length > 0 ? (
+          {/* Long-Term view */}
+          <div className="mt-3">
+            <h5>Long-Term Outlook (6–24 months)</h5>
+            <p><strong>Recommendation:</strong> {prediction.long_term?.recommendation ?? "N/A"}</p>
+            <p><strong>Score:</strong> {prediction.long_term?.score ?? prediction.long_term?.confidence ?? "N/A"}</p>
+            <p>{prediction.long_term?.reasoning ?? "No long-term reasoning available."}</p>
+
+            <ExplanationBlock
+              title="Long-term outlook explained"
+              open={openLongExplain}
+              onToggle={() => setOpenLongExplain(!openLongExplain)}
+            >
+              <p>
+                The long-term view uses returns over 6 months — 1 year, volatility, and simple fundamental metrics
+                (P/E, dividend yield, market cap, beta). It's meant to help decide whether a stock could be a
+                candidate to hold for many months, not for day trading.
+              </p>
+              <ul>
+                <li><strong>Long-term buy</strong> — longer-term trend + reasonable volatility.</li>
+                <li><strong>Hold / Accumulate</strong> — okay fundamentals and trend.</li>
+                <li><strong>Neutral / Watch</strong> — mixed signals; monitor.</li>
+                <li><strong>Avoid / High risk</strong> — high volatility or deteriorating fundamentals.</li>
+              </ul>
+            </ExplanationBlock>
+          </div>
+
+          {/* FUNDAMENTALS */}
+          <div className="mt-3">
+            <h5>Fundamentals</h5>
             <ul>
-              {prediction.short_term.candlestick_patterns.map((p, idx) => (
-                <li key={idx}>{p}</li>
-              ))}
+              <li><strong>Company:</strong> {prediction.fundamentals?.shortName ?? "N/A"}</li>
+              <li><strong>Market Cap:</strong> {prediction.fundamentals?.marketCap ? Number(prediction.fundamentals.marketCap).toLocaleString() : "N/A"}</li>
+              <li><strong>Sector:</strong> {prediction.fundamentals?.sector ?? "N/A"}</li>
+              <li><strong>Trailing P/E:</strong> {prediction.fundamentals?.trailingPE ?? "N/A"}</li>
+              <li><strong>Forward P/E:</strong> {prediction.fundamentals?.forwardPE ?? "N/A"}</li>
+              <li><strong>Dividend Yield:</strong> {prediction.fundamentals?.dividendYield ?? "N/A"}</li>
+              <li><strong>Beta:</strong> {prediction.fundamentals?.beta ?? "N/A"}</li>
             </ul>
-          ) : (
-            <p>No major patterns detected.</p>
-          )} */}
 
-          <h4 className="mt-3">7-Day Forecast</h4>
-          <ul>
-            {prediction.short_term.forecast_next_days?.map((val, i) => (
-              <li key={i}>Day {i + 1}: ${val.toFixed(2)}</li>
-            ))}
-          </ul>
+            <ExplanationBlock
+              title="Fundamental metrics explained"
+              open={openFundExplain}
+              onToggle={() => setOpenFundExplain(!openFundExplain)}
+            >
+              <p>These are company-level measures that help evaluate long-term suitability:</p>
+              <ul>
+                <li><strong>Market Cap</strong> — company size. Large cap = more stable on average.</li>
+                <li><strong>P/E (Price-to-Earnings)</strong> — how the market values earnings. Very high P/E can mean expensive expectations.</li>
+                <li><strong>Dividend Yield</strong> — yearly dividend as % of price. Provides income if present.</li>
+                <li><strong>Beta</strong> — how volatile compared to the market. Beta /greaterthan 1 = more volatile than market.</li>
+              </ul>
+            </ExplanationBlock>
+          </div>
 
-          {/* BB + Close */}
-          {prediction?.chart && (
+          {/* CHARTS SECTION */}
+          {prediction?.chart && chartData.length > 0 && (
             <div className="mt-4">
-              <h4>Price Chart (Close + Bollinger Bands)</h4>
+              {/* BB (Close + BB upper/lower) */}
+              <div className="mb-4">
+                <h4>Price Chart — Close + Bollinger Bands + EMA</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" hide={true} />
+                    <YAxis domain={["auto", "auto"]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="close" stroke="#007bff" dot={false} name="Close" />
+                    <Line type="monotone" dataKey="bb_upper" stroke="#28a745" dot={false} name="BB Upper" />
+                    <Line type="monotone" dataKey="bb_lower" stroke="#dc3545" dot={false} name="BB Lower" />
+                    <Line type="monotone" dataKey="ema_20" stroke="#6542b7ff" dot={false} name="EMA 20" />
+                  </LineChart>
+                </ResponsiveContainer>
 
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={prediction.chart.dates.map((date, i) => ({
-                    date,
-                    close: prediction.chart.close[i],
-                    bb_upper: prediction.chart.bb_upper[i],
-                    bb_lower: prediction.chart.bb_lower[i],
-                  }))}
+                <ExplanationBlock
+                  title="Bollinger Bands explained + EMA"
+                  open={openBBExplain}
+                  onToggle={() => setOpenBBExplain(!openBBExplain)}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" hide={true} />
-                  <YAxis domain={['auto', 'auto']} />
-                  <Tooltip />
-                  <Legend />
+                  <p>
+                    <strong>Bollinger Bands</strong> are two lines (upper and lower) drawn a couple of standard deviations above
+                    and below the 20-day moving average. They show how stretched a price move is.
+                  </p>
+                  <ul>
+                    <li>If price touches the upper band often, it may be overbought in the short-term.</li>
+                    <li>If price touches the lower band often, it may be oversold.</li>
+                    <li>When bands tighten (narrow), volatility is low and a move often follows; when bands widen, volatility is high.</li>
+                  </ul>
+                  <p>
+                    EMA stands for <strong>Exponential Moving Average</strong>. The EMA gives more weight to recent prices,
+                    so it reacts faster than a simple moving average. The 20-day EMA is a common short-to-medium trend indicator.
+                  </p>
+                  <p>
+                    Price above EMA → short-term uptrend. Price below EMA → short-term downtrend. The EMA helps smooth noise.
+                  </p>
+                </ExplanationBlock>
+              </div>
 
-                  <Line
-                    type="monotone"
-                    dataKey="close"
-                    stroke="#007bff"
-                    dot={false}
-                    name="Close"
-                  />
+              {/* EMA 20 + Close
+              <div className="mb-4">
+                <h4>Price Chart — Close + EMA 20</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" hide={true} />
+                    <YAxis domain={["auto", "auto"]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="close" stroke="#007bff" dot={false} name="Close" />
+                    <Line type="monotone" dataKey="ema_20" stroke="#28a745" dot={false} name="EMA 20" />
+                  </LineChart>
+                </ResponsiveContainer>
 
-                  <Line
-                    type="monotone"
-                    dataKey="bb_upper"
-                    stroke="#28a745"
-                    dot={false}
-                    name="Bollinger Upper"
-                  />
+                <ExplanationBlock
+                  title="EMA 20 explained"
+                  open={openEMAExplain}
+                  onToggle={() => setOpenEMAExplain(!openEMAExplain)}
+                >
+                  <p>
+                    EMA stands for <strong>Exponential Moving Average</strong>. The EMA gives more weight to recent prices,
+                    so it reacts faster than a simple moving average. The 20-day EMA is a common short-to-medium trend indicator.
+                  </p>
+                  <p>
+                    Price above EMA → short-term uptrend. Price below EMA → short-term downtrend. The EMA helps smooth noise.
+                  </p>
+                </ExplanationBlock>
+              </div> */}
 
-                  <Line
-                    type="monotone"
-                    dataKey="bb_lower"
-                    stroke="#dc3545"
-                    dot={false}
-                    name="Bollinger Lower"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {/* RSI */}
+              <div className="mb-4">
+                <h4>RSI (Relative Strength Index) — 14</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" hide={true} />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="rsi_14" stroke="#007bff" dot={false} name="RSI 14" />
+                    {/* zone lines */}
+                    <Line type="monotone" dataKey={() => 70} stroke="#28a745" dot={false} name="Overbought (70)" />
+                    <Line type="monotone" dataKey={() => 30} stroke="#dc3545" dot={false} name="Oversold (30)" />
+                  </LineChart>
+                </ResponsiveContainer>
+
+                <ExplanationBlock
+                  title="RSI explained (for beginners)"
+                  open={openRSIExplain}
+                  onToggle={() => setOpenRSIExplain(!openRSIExplain)}
+                >
+                  <p>
+                    RSI measures how fast price changed recently. Values run 0-100:
+                  </p>
+                  <ul>
+                    <li><strong>\greaterthan70</strong> — often considered <em>overbought</em> (many buyers recently).</li>
+                    <li><strong>\lessthan30</strong> — often considered <em>oversold</em> (many sellers recently).</li>
+                    <li>Between 30-70 is neutral. RSI helps spot short-term extremes — not a guaranteed trade signal.</li>
+                  </ul>
+                </ExplanationBlock>
+              </div>
+
+              {/* MACD */}
+              <div className="mb-4">
+                <h4>MACD (Moving Average Convergence Divergence)</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" hide={true} />
+                    <YAxis domain={["auto", "auto"]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="macd" stroke="#28a745" dot={false} name="MACD" />
+                    <Line type="monotone" dataKey="macd_signal" stroke="#dc3545" dot={false} name="Signal" />
+                    <Line type="monotone" dataKey="macd_hist" stroke="#007bff" dot={false} name="Hist" />
+                  </LineChart>
+                </ResponsiveContainer>
+
+                <ExplanationBlock
+                  title="MACD explained"
+                  open={openMACDExplain}
+                  onToggle={() => setOpenMACDExplain(!openMACDExplain)}
+                >
+                  <p>
+                    MACD compares two EMAs (fast & slow) to show momentum shifts. The MACD line minus its signal line
+                    is shown as the histogram:
+                  </p>
+                  <ul>
+                    <li><strong>MACD line above signal</strong> — bullish momentum.</li>
+                    <li><strong>MACD line below signal</strong> — bearish momentum.</li>
+                    <li>Rising histogram bars usually mean strengthening momentum; falling bars mean weakening.</li>
+                  </ul>
+                  <p>MACD is useful for spotting trend changes, but combine with other checks like volume and price structure.</p>
+                </ExplanationBlock>
+              </div>
+
+              {/* VOLUME */}
+              <div className="mb-4">
+                <h4>Volume (and 20-day avg)</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" hide={true} />
+                    <YAxis domain={["auto", "auto"]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="vol" stroke="#28a745" dot={false} name="Volume" />
+                    <Line type="monotone" dataKey="vol_mean_20" stroke="#dc3545" dot={false} name="20-day Avg Vol" />
+                  </LineChart>
+                </ResponsiveContainer>
+
+                <ExplanationBlock
+                  title="Volume explained"
+                  open={openVolExplain}
+                  onToggle={() => setOpenVolExplain(!openVolExplain)}
+                >
+                  <p>
+                    Volume is how many shares/contracts traded. Volume helps confirm moves:
+                  </p>
+                  <ul>
+                    <li>Price up + rising volume → move likely supported.</li>
+                    <li>Price up + low volume → move may be weak (less conviction).</li>
+                    <li>Volume spikes often occur at important events (news, earnings).</li>
+                  </ul>
+                </ExplanationBlock>
+              </div>
             </div>
           )}
 
-          {/* EMA 20 + Close */}
-          {prediction?.chart && (
-            <div className="mt-4">
-              <h4>Price Chart (Close + EMA 20)</h4>
+          {/* Candlestick patterns & Forecast */}
+          <div className="mt-3">
+            <h5>Candlestick Patterns</h5>
+            {prediction.short_term?.candlestick_patterns?.length > 0 ? (
+              <ul>
+                {prediction.short_term.candlestick_patterns.map((p, idx) => (
+                  <li key={idx}>{p}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No major patterns detected.</p>
+            )}
+          </div>
 
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={prediction.chart.dates.map((date, i) => ({
-                    date,
-                    close: prediction.chart.close[i],
-                    ema_20: prediction.chart.ema_20[i],
-                    // bb_lower: prediction.chart.bb_lower[i],
-                  }))}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" hide={true} />
-                  <YAxis domain={['auto', 'auto']} />
-                  <Tooltip />
-                  <Legend />
+          <div className="mt-3">
+            <h5>7-Day Forecast (short-term)</h5>
+            {prediction.short_term?.forecast_next_days?.length > 0 ? (
+              <ul>
+                {prediction.short_term.forecast_next_days.map((val, i) => (
+                  <li key={i}>Day {i + 1}: ${Number(val).toFixed(2)}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No forecast available.</p>
+            )}
+          </div>
 
-                  <Line
-                    type="monotone"
-                    dataKey="close"
-                    stroke="#007bff"
-                    dot={false}
-                    name="Close"
-                  />
-
-                  <Line
-                    type="monotone"
-                    dataKey="ema_20"
-                    stroke="#28a745"
-                    dot={false}
-                    name="EMA 20"
-                  />
-{/* 
-                  <Line
-                    type="monotone"
-                    dataKey="bb_lower"
-                    stroke="#dc3545"
-                    dot={false}
-                    name="Bollinger Lower"
-                  /> */}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {/* RSI 14 */}
-          {prediction?.chart && (
-            <div className="mt-4">
-              <h4>RSI 14 Chart</h4>
-
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={prediction.chart.dates.map((date, i) => ({
-                    date,
-                    // close: prediction.chart.close[i],
-                    zone_high: 70,
-                    rsi_14: prediction.chart.rsi_14[i],
-                    zone_low: 30,
-                    // bb_lower: prediction.chart.bb_lower[i],
-                  }))}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" hide={true} />
-                  <YAxis domain={['auto', 'auto']} />
-                  <Tooltip />
-                  <Legend />
-
-                  <Line
-                    type="monotone"
-                    dataKey="zone_high"
-                    stroke="#007bff"
-                    dot={false}
-                    name="Overbought zone >"
-                  />
-
-                  <Line
-                    type="monotone"
-                    dataKey="rsi_14"
-                    stroke="#28a745"
-                    dot={false}
-                    name="RSI 14"
-                  />
-
-                  <Line
-                    type="monotone"
-                    dataKey="zone_low"
-                    stroke="#dc3545"
-                    dot={false}
-                    name="oversold zone <"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {/* MACD */}
-          {prediction?.chart && (
-            <div className="mt-4">
-              <h4>MACD</h4>
-
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={prediction.chart.dates.map((date, i) => ({
-                    date,
-                    macd: prediction.chart.macd[i],
-                    macd_signal: prediction.chart.macd_signal[i],
-                    macd_hist: prediction.chart.macd_hist[i],
-                  }))}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" hide={true} />
-                  <YAxis domain={['auto', 'auto']} />
-                  <Tooltip />
-                  <Legend />
-
-                  <Line
-                    type="monotone"
-                    dataKey="macd"
-                    stroke="#28a745"
-                    dot={false}
-                    name="MACD"
-                  />
-
-                  <Line
-                    type="monotone"
-                    dataKey="macd_signal"
-                    stroke="#dc3545"
-                    dot={false}
-                    name="MACD Signal"
-                  />
-
-                  <Line
-                    type="monotone"
-                    dataKey="macd_hist"
-                    stroke="#007bff"
-                    dot={false}
-                    name="MACD Hist"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {/* Volume */}
-          {prediction?.chart && (
-            <div className="mt-4">
-              <h4>Volume Chart</h4>
-
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={prediction.chart.dates.map((date, i) => ({
-                    date,
-                    vol: prediction.chart.vol[i],
-                    vol_mean_20: prediction.chart.vol_mean_20[i],
-                  }))}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" hide={true} />
-                  <YAxis domain={['auto', 'auto']} />
-                  <Tooltip />
-                  <Legend />
-
-                  <Line
-                    type="monotone"
-                    dataKey="vol"
-                    stroke="#28a745"
-                    dot={false}
-                    name="Volume"
-                  />
-
-                  <Line
-                    type="monotone"
-                    dataKey="vol_mean_20"
-                    stroke="#dc3545"
-                    dot={false}
-                    name="Average Volume"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-          
           {/* Quantity + Add Asset */}
           {user && (
             <>
