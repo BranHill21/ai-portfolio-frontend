@@ -57,8 +57,8 @@ function App() {
     if (assets) {
       localStorage.setItem("assets", JSON.stringify(assets));
 
-      // Assets expire every 10 minutes
-      localStorage.setItem("assets_expires", (Date.now() + 10 * 60 * 1000).toString());
+      // Assets expire every 60 minutes
+      localStorage.setItem("assets_expires", (Date.now() + 60 * 60 * 1000).toString());
     }
   }, [assets]);
 
