@@ -11,7 +11,7 @@ import {
   Legend,
   CartesianGrid,
   ResponsiveContainer,
-  Bar
+  // Bar
 } from "recharts";
 
 const safeNum = (v, fallback = null) => {
@@ -97,7 +97,7 @@ const Insights = ({ user }) => {
 
   // explanation toggles per chart
   const [openBBExplain, setOpenBBExplain] = useState(false);
-  const [openEMAExplain, setOpenEMAExplain] = useState(false);
+  // const [openEMAExplain, setOpenEMAExplain] = useState(false);
   const [openRSIExplain, setOpenRSIExplain] = useState(false);
   const [openMACDExplain, setOpenMACDExplain] = useState(false);
   const [openVolExplain, setOpenVolExplain] = useState(false);
@@ -193,13 +193,13 @@ const Insights = ({ user }) => {
 
       <div className="mb-3 d-flex gap-2">
         {/* simple endpoint available to anyone */}
-        <Button
+        {/* <Button
           variant="outline-primary"
           onClick={() => handlePredict(true)}
           disabled={!symbol || loading}
         >
           {loading ? "Loading..." : "Get Simple Prediction"}
-        </Button>
+        </Button> */}
 
         {/* full /predict only for logged-in users */}
         <Button
@@ -476,8 +476,8 @@ const Insights = ({ user }) => {
                     <YAxis domain={["auto", "auto"]} />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="vol" stroke="#28a745" dot={false} name="Volume" />
-                    <Line type="monotone" dataKey="vol_mean_20" stroke="#dc3545" dot={false} name="20-day Avg Vol" />
+                    <Line type="monotone" dataKey="vol" stroke="#32ce57ff" dot={false} name="Volume" />
+                    <Line type="monotone" dataKey="vol_mean_20" stroke="#00801eff" dot={false} name="20-day Avg Vol" />
                   </LineChart>
                 </ResponsiveContainer>
 
