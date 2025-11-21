@@ -301,7 +301,7 @@ const Insights = ({ user }) => {
           {/* RSI 14 */}
           {prediction?.chart && (
             <div className="mt-4">
-              <h4>Price Chart (RSI 14)</h4>
+              <h4>RSI 14 Chart</h4>
 
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart
@@ -342,6 +342,93 @@ const Insights = ({ user }) => {
                     stroke="#dc3545"
                     dot={false}
                     name="oversold zone <"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* MACD */}
+          {prediction?.chart && (
+            <div className="mt-4">
+              <h4>MACD</h4>
+
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={prediction.chart.dates.map((date, i) => ({
+                    date,
+                    macd: prediction.chart.macd[i],
+                    macd_signal: prediction.chart.macd_signal[i],
+                    macd_hist: prediction.chart.macd_hist[i],
+                  }))}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" hide={true} />
+                  <YAxis domain={['auto', 'auto']} />
+                  <Tooltip />
+                  <Legend />
+
+                  <Line
+                    type="monotone"
+                    dataKey="macd"
+                    stroke="#28a745"
+                    dot={false}
+                    name="MACD"
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="macd_signal"
+                    stroke="#dc3545"
+                    dot={false}
+                    name="MACD Signal"
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="macd_hist"
+                    stroke="#007bff"
+                    dot={false}
+                    name="MACD Hist"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Volume */}
+          {prediction?.chart && (
+            <div className="mt-4">
+              <h4>Volume Chart</h4>
+
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={prediction.chart.dates.map((date, i) => ({
+                    date,
+                    vol: prediction.chart.vol[i],
+                    vol_mean_20: prediction.chart.vol_mean_20[i],
+                  }))}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" hide={true} />
+                  <YAxis domain={['auto', 'auto']} />
+                  <Tooltip />
+                  <Legend />
+
+                  <Line
+                    type="monotone"
+                    dataKey="vol"
+                    stroke="#28a745"
+                    dot={false}
+                    name="Volume"
+                  />
+
+                  <Line
+                    type="monotone"
+                    dataKey="vol_mean_20"
+                    stroke="#dc3545"
+                    dot={false}
+                    name="Average Volume"
                   />
                 </LineChart>
               </ResponsiveContainer>
