@@ -1,0 +1,106 @@
+/* ========= GLOBAL CONTAINER ========= */
+.landingWrapper {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 90vh;
+  /* background: #0b0b0b; deep black */
+  color: #e5e5e5; /* soft white */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "SF Pro Text", system-ui, sans-serif;
+    
+}
+
+/* ========= BACKGROUND THREADS ========= */
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  /* filter: brightness(0.7) saturate(1.2); */
+  background-color: black;
+}
+
+/* ========= FOREGROUND CONTENT ========= */
+.content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding-top: 20vh;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+  
+}
+
+/* ========= TYPOGRAPHY ========= */
+.title {
+  font-size: clamp(2.8rem, 5vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -1px;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #ffffff, #808080);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  opacity: 0.8;
+  margin-bottom: 40px;
+}
+
+/* ========= BUTTON STYLES ========= */
+
+.buttonRow {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 12px 28px;
+  font-size: 1rem;
+  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+  background: #111;
+  color: #e5e5e5;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+}
+
+.button:hover {
+  background: #1a1a1a;
+  border-color: #3d3d3d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 480px) {
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .button {
+    width: 100%;
+  }
+}
