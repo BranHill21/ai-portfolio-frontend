@@ -13,18 +13,20 @@ export default function NavBar({ user, setUser, setAssets }) {
 
   return (
     <nav style={{ padding: "1rem", background: "#252629ff" }}>
-      <Link to="/dashboard" style={{ marginRight: "1rem" }}>Dashboard</Link>
-      <Link to="/insights" style={{ marginRight: "1rem" }}>Insights</Link>
+      
 
       {!user && (
         <>
-          <Link to="/" style={{ marginRight: "1rem" }}>Login</Link>
+          <Link to="/" style={{ marginRight: "1rem" }}>Home</Link>
+          <Link to="/login" style={{ marginRight: "1rem" }}>Login</Link>
           <Link to="/register" style={{ marginRight: "1rem" }}>Register</Link>
         </>
       )}
 
       {user && (
         <>
+          <Link to="/dashboard" style={{ marginRight: "1rem" }}>Dashboard</Link>
+          <Link to="/insights" style={{ marginRight: "1rem" }}>Insights</Link>
           <span style={{ marginRight: "1rem" }}>Hi, {user.username}</span>
           <button onClick={logout}>Logout</button>
         </>
