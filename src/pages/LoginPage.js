@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
+import styles from "./LoginPage.module.css";
 
 const LoginPage = ({ onLogin }) => {
   const [form, setForm] = useState({ username: "", password: "" });
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     const saved = localStorage.getItem("user");
     if (saved) navigate("/dashboard");
@@ -29,22 +29,39 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Login</h2>
+    <div className={styles.wrapper}>
+      <div className={styles.card}>
+        <h2 className={styles.title}>Welcome Back</h2>
 
-      <form onSubmit={handleSubmit}>
-        <input name="username" placeholder="Username" onChange={handleChange} required />
-        <br />
-        <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-        <br />
-        <button type="submit">Login</button>
-      </form>
+        <form onSubmit={handleSubmit}>
+          <input
+            name="username"
+            placeholder="Username"
+            className={styles.input}
+            onChange={handleChange}
+            required
+          />
 
-      <p>{message}</p>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            className={styles.input}
+            onChange={handleChange}
+            required
+          />
 
-      <p>
-        Don't have an account? <a href="/register">Register Here</a>
-      </p>
+          <button className={styles.button} type="submit">
+            Login
+          </button>
+        </form>
+
+        {message && <p className={styles.error}>{message}</p>}
+
+        <p className={styles.footer}>
+          Don't have an account? <a href="/register">Register Here</a>
+        </p>
+      </div>
     </div>
   );
 };
