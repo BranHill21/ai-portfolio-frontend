@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
 import { Modal, Button, Alert, Form } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = ({ user, assets, setAssets }) => {
+  const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(false);
 
   // ---------- Search + Pagination ----------
@@ -154,7 +157,9 @@ const Dashboard = ({ user, assets, setAssets }) => {
 
             <tbody>
               {paginatedAssets.map((asset) => (
-                <tr key={asset.id}>
+                <tr key={asset.id} onClick={() =>
+                navigate(`/insights/${asset.symbol}?buyPrice=${asset.buyPrice}&quantity=${asset.quantity}`)
+              }>
                   <td>{asset.symbol}</td>
                   <td>{asset.quantity}</td>
                   <td>${asset.buyPrice}</td>

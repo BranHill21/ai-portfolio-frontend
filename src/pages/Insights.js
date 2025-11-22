@@ -1,5 +1,6 @@
 // Insights.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import API from "../api";
 import { Alert, Button, Form, Collapse } from "react-bootstrap";
 import {
@@ -95,6 +96,12 @@ const Insights = ({ user }) => {
   const [quantity, setQuantity] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "", show: false });
 
+  const { symbol: routeSymbol } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const symbolBuyPrice = searchParams.get("buyPrice");
+  const symbolQuantity = searchParams.get("quantity");
+
   // explanation toggles per chart
   const [openBBExplain, setOpenBBExplain] = useState(false);
   // const [openEMAExplain, setOpenEMAExplain] = useState(false);
@@ -105,43 +112,51 @@ const Insights = ({ user }) => {
   const [openLongExplain, setOpenLongExplain] = useState(false);
   const [openFundExplain, setOpenFundExplain] = useState(false);
 
-  const showAlert = (message, type = "success") => {
-    setAlert({ message, type, show: true });
-    setTimeout(() => {
-      setAlert({ show: false });
-    }, 3000);
-  };
+  const showAlert = useCallback((message, type = "success") => {
+  setAlert({ message, type, show: true });
 
-  async function fetchWithRetry(fn, retries = 3, delay = 400) {
-    try {
-      return await fn();
-    } catch (err) {
-      if (retries <= 0) throw err;
-      await new Promise((r) => setTimeout(r, delay));
-      return fetchWithRetry(fn, retries - 1, delay * 1.5);
-    }
+  setTimeout(() => {
+    setAlert({ show: false });
+  }, 3000);
+}, []);
+
+  const fetchWithRetry = useCallback(async (fn, retries = 3, delay = 400) => {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries <= 0) throw err;
+
+    await new Promise((r) => setTimeout(r, delay));
+    return fetchWithRetry(fn, retries - 1, delay * 1.5);
   }
+}, []);
 
-  const handlePredict = async (useSimple = false) => {
-    // same logic: call /predict (default) or /predict/simple if useSimple true
-    setLoading(true);
-    setPrediction(null);
+  const handlePredict = useCallback(
+  async (useSimple = false, forcedSymbol = null) => {
+      const finalSymbol = forcedSymbol || symbol;
+      if (!finalSymbol) return;
 
-    try {
-      const endpoint = useSimple ? "/api/predict/simple" : "/api/predict";
-      const res = await fetchWithRetry(() =>
-        API.post(endpoint, { symbol })
-      );
-      setPrediction(res.data);
-      setQuantity("");
-      showAlert("Prediction loaded successfully!");
-    } catch (err) {
-      console.error(err);
-      showAlert("Failed to load prediction. Please try again.", "danger");
-    }
+      setLoading(true);
+      setPrediction(null);
 
-    setLoading(false);
-  };
+      try {
+        const endpoint = useSimple ? "/api/predict/simple" : "/api/predict";
+        const res = await fetchWithRetry(() =>
+          API.post(endpoint, { symbol: finalSymbol })
+        );
+
+        setPrediction(res.data);
+        setQuantity("");
+        showAlert("Prediction loaded successfully!");
+      } catch (err) {
+        console.error(err);
+        showAlert("Failed to load prediction. Please try again.", "danger");
+      }
+
+      setLoading(false);
+    },
+    [symbol, fetchWithRetry, showAlert]
+  );
 
   const addAsset = async () => {
     if (!quantity || quantity <= 0) {
@@ -168,6 +183,15 @@ const Insights = ({ user }) => {
 
   // Prepare chart data safely when prediction exists
   const chartData = prediction?.chart ? buildChartData(prediction.chart) : [];
+  const hasAutoPredicted = useRef(false);
+
+  useEffect(() => {
+    if (!hasAutoPredicted.current && routeSymbol) {
+      hasAutoPredicted.current = true;
+      setSymbol(routeSymbol.toUpperCase());    // load the symbol into input
+      handlePredict(false, routeSymbol);       // pass it correctly
+    }
+  }, [routeSymbol, handlePredict]);
 
   return (
     <div className="container mt-4">
@@ -184,7 +208,10 @@ const Insights = ({ user }) => {
       <h2>Market Insights</h2>
 
       {/* SYMBOL INPUT */}
-      <Form.Control
+      {routeSymbol ? 
+      (<></>) 
+      : (<>
+        <Form.Control
         value={symbol}
         onChange={(e) => setSymbol(e.target.value.toUpperCase())}
         placeholder="Enter Stock/Crypto Symbol (AAPL, BTC-USD)"
@@ -210,6 +237,9 @@ const Insights = ({ user }) => {
           {loading ? "Loading..." : user ? "Get Full Prediction" : "Login to use full"}
         </Button>
       </div>
+      </>)}
+      
+      
 
       {/* SHOW PREDICTION */}
       {prediction && (
@@ -220,7 +250,21 @@ const Insights = ({ user }) => {
               ${prediction.current_price?.toFixed?.(2) ?? prediction.current_price}
             </small>
           </h3>
+          {routeSymbol ? (
+            <div style={{ gap: 18, marginTop: 8 }}>
+              <h3>Your Stats:</h3>
+              <p>Symbol: {routeSymbol}</p>
+              <p>Your Buy Price: {symbolBuyPrice}</p>
+              <p>Quantity: {symbolQuantity}</p>
 
+              <p>profit/loss per stock: {(prediction.current_price - symbolBuyPrice)?.toFixed?.(2)}</p>
+              <p>profit/loss per stock percent: {(((prediction.current_price - symbolBuyPrice)/ prediction.current_price) * 100)?.toFixed?.(2)}%</p>
+              <p>total profit/loss : {((prediction.current_price - symbolBuyPrice) * symbolQuantity)?.toFixed?.(2)}</p>
+            </div>
+          ) : (
+            // <p>No symbol selected yet.</p>
+            <div></div>
+          )}
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 8 }}>
             <div>
               <strong>Total Change:</strong>{" "}
@@ -273,7 +317,7 @@ const Insights = ({ user }) => {
 
           {/* Long-Term view */}
           <div className="mt-3">
-            <h5>Long-Term Outlook (6–24 months)</h5>
+            <h5>Long-Term Outlook (6-24 months)</h5>
             <p><strong>Recommendation:</strong> {prediction.long_term?.recommendation ?? "N/A"}</p>
             <p><strong>Score:</strong> {prediction.long_term?.score ?? prediction.long_term?.confidence ?? "N/A"}</p>
             <p>{prediction.long_term?.reasoning ?? "No long-term reasoning available."}</p>
@@ -527,7 +571,7 @@ const Insights = ({ user }) => {
           </div>
 
           {/* Quantity + Add Asset */}
-          {user && (
+          {user && !routeSymbol && (
             <>
               <Form.Control
                 type="number"

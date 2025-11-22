@@ -77,7 +77,8 @@ function App() {
           element={<Dashboard user={user} assets={assets} setAssets={setAssets} />}
         />
 
-        <Route path="/insights" element={<Insights user={user} setAssets={setAssets} />} />
+        <Route path="/insights/" element={<Insights user={user} setAssets={setAssets} />} />
+        <Route path="/insights/:symbol" element={<Insights user={user} setAssets={setAssets} />} />
         <Route path="/testpage" element={<TestPage />} />
       </Routes>
     </Router>
