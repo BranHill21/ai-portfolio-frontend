@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
+import styles from "./RegisterPage.module.css";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -32,22 +33,51 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Create Account</h2>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Create Account</h2>
 
-      <form onSubmit={submit}>
-        <input name="username" placeholder="Username" onChange={change} required />
-        <br />
-        <input name="email" placeholder="Email" type="email" onChange={change} required />
-        <br />
-        <input name="password" placeholder="Password" type="password" onChange={change} required />
-        <br />
-        <input name="confirmPassword" placeholder="Confirm Password" type="password" onChange={change} required />
-        <br />
-        <button type="submit">Register</button>
+      <form onSubmit={submit} className={styles.formCard}>
+        <input
+          name="username"
+          placeholder="Username"
+          className={styles.input}
+          onChange={change}
+          required
+        />
+
+        <input
+          name="email"
+          placeholder="Email"
+          type="email"
+          className={styles.input}
+          onChange={change}
+          required
+        />
+
+        <input
+          name="password"
+          placeholder="Password"
+          type="password"
+          className={styles.input}
+          onChange={change}
+          required
+        />
+
+        <input
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          type="password"
+          className={styles.input}
+          onChange={change}
+          required
+        />
+
+        <button type="submit" className={styles.button}>
+          Register
+        </button>
+
+        <p className={styles.message}>{message}</p>
       </form>
-
-      <p>{message}</p>
     </div>
   );
 }
