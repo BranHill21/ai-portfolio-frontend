@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import styles from "./NavBar.module.css";
 
 export default function NavBar({ user, setUser, setAssets }) {
   const navigate = useNavigate();
@@ -12,25 +13,25 @@ export default function NavBar({ user, setUser, setAssets }) {
   };
 
   return (
-    <nav style={{ padding: "1rem", background: "#252629ff" }}>
-      
+    <nav className={styles.navbar}>
+      <div className={styles.navLinks}>
+        {!user && (
+          <>
+            <Link className={styles.link} to="/">Home</Link>
+            <Link className={styles.link} to="/login">Login</Link>
+            <Link className={styles.link} to="/register">Register</Link>
+          </>
+        )}
 
-      {!user && (
-        <>
-          <Link to="/" style={{ marginRight: "1rem" }}>Home</Link>
-          <Link to="/login" style={{ marginRight: "1rem" }}>Login</Link>
-          <Link to="/register" style={{ marginRight: "1rem" }}>Register</Link>
-        </>
-      )}
-
-      {user && (
-        <>
-          <Link to="/dashboard" style={{ marginRight: "1rem" }}>Dashboard</Link>
-          <Link to="/insights" style={{ marginRight: "1rem" }}>Insights</Link>
-          <span style={{ marginRight: "1rem" }}>Hi, {user.username}</span>
-          <button onClick={logout}>Logout</button>
-        </>
-      )}
+        {user && (
+          <>
+            <Link className={styles.link} to="/dashboard">Dashboard</Link>
+            <Link className={styles.link} to="/insights">Insights</Link>
+            <span className={styles.username}>Hi, {user.username}</span>
+            <button className={styles.logoutBtn} onClick={logout}>Logout</button>
+          </>
+        )}
+      </div>
     </nav>
   );
 }
