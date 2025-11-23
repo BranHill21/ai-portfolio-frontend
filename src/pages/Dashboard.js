@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import API from "../api";
 import { Modal, Button, Alert, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import styles from "./Dashboard.module.css";
 
 const Dashboard = ({ user, assets, setAssets }) => {
   const navigate = useNavigate();
-  
+
   const [loading, setLoading] = useState(false);
 
   // ---------- Search + Pagination ----------
@@ -118,7 +119,7 @@ const Dashboard = ({ user, assets, setAssets }) => {
   if (!user) return <p>Please log in.</p>;
 
   return (
-    <div className="container mt-4">
+    <div className={styles.containerDark}>
 
       {/* Alerts */}
       {alert.show && (
@@ -127,13 +128,13 @@ const Dashboard = ({ user, assets, setAssets }) => {
         </Alert>
       )}
 
-      <h1>Dashboard</h1>
-      <p>Hello, <b>{user.username}</b></p>
+      <h1 className={styles.title}>Dashboard</h1>
+      <p className={styles.subtitle}>Hello, <b>{user.username}</b></p>
 
       {/* Search */}
       <Form.Control
         placeholder="Search assets..."
-        className="mb-3"
+        className={styles.search}
         value={search}
         onChange={(e) => {
           setSearch(e.target.value);
@@ -144,8 +145,8 @@ const Dashboard = ({ user, assets, setAssets }) => {
       {loading && <p>Loading assets...</p>}
 
       {!loading && paginatedAssets.length > 0 ? (
-        <>
-          <table className="table table-striped">
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
             <thead>
               <tr>
                 <th>Symbol</th>
@@ -164,10 +165,10 @@ const Dashboard = ({ user, assets, setAssets }) => {
                   <td>{asset.quantity}</td>
                   <td>${asset.buyPrice}</td>
                   <td>
-                    <Button size="sm" onClick={() => openUpdateModal(asset)}>
+                    <Button size="sm" className={styles.actionBtn} onClick={() => openUpdateModal(asset)}>
                       Update
                     </Button>{" "}
-                    <Button size="sm" variant="danger" onClick={() => openDeleteModal(asset)}>
+                    <Button size="sm" variant="danger" className={styles.actionBtn} onClick={() => openDeleteModal(asset)}>
                       Delete
                     </Button>
                   </td>
@@ -177,24 +178,24 @@ const Dashboard = ({ user, assets, setAssets }) => {
           </table>
 
           {/* Pagination */}
-          <div className="d-flex justify-content-between">
+          <div className={styles.pagination}>
             <Button disabled={page <= 1} onClick={() => setPage(page - 1)}>
               Previous
             </Button>
-            <span>
+            <span className={styles.pageText}>
               Page {page} of {totalPages}
             </span>
             <Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
               Next
             </Button>
           </div>
-        </>
+        </div>
       ) : (
         <p>No assets found.</p>
       )}
 
       {/* ------------------- UPDATE MODAL ------------------- */}
-      <Modal show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
+      <Modal className={styles.modalDark} show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Update Asset</Modal.Title>
         </Modal.Header>
