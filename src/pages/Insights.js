@@ -14,6 +14,7 @@ import {
   ResponsiveContainer,
   // Bar
 } from "recharts";
+import styles from "./Insights.module.css";
 
 const safeNum = (v, fallback = null) => {
   if (v === undefined || v === null || Number.isNaN(Number(v))) return fallback;
@@ -65,9 +66,9 @@ const buildChartData = (chart) => {
 };
 
 const ExplanationBlock = ({ title, children, open, onToggle }) => (
-  <div className="mt-2">
+  <div className={styles.explainBox}>
     <Button
-      variant="link"
+      className={styles.explainToggle}
       onClick={onToggle}
       style={{ padding: 0, marginBottom: 8 }}
     >
@@ -194,10 +195,10 @@ const Insights = ({ user }) => {
   }, [routeSymbol, handlePredict]);
 
   return (
-    <div className="container mt-4">
+    <div className={styles.container}>
       {alert.show && (
         <Alert
-          variant={alert.type}
+          className={styles.alertDark}
           dismissible
           onClose={() => setAlert({ show: false })}
         >
@@ -215,7 +216,7 @@ const Insights = ({ user }) => {
         value={symbol}
         onChange={(e) => setSymbol(e.target.value.toUpperCase())}
         placeholder="Enter Stock/Crypto Symbol (AAPL, BTC-USD)"
-        className="mb-2"
+        className={styles.inputDark}
       />
 
       <div className="mb-3 d-flex gap-2">
@@ -230,6 +231,7 @@ const Insights = ({ user }) => {
 
         {/* full /predict only for logged-in users */}
         <Button
+          className={styles.btnPrimary}
           onClick={() => handlePredict(false)}
           disabled={!symbol || loading || !user}
           title={user ? "" : "Login required for full prediction"}
@@ -265,7 +267,7 @@ const Insights = ({ user }) => {
             // <p>No symbol selected yet.</p>
             <div></div>
           )}
-          <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 8 }}>
+          <div className={styles.dataRow}>
             <div>
               <strong>Total Change:</strong>{" "}
               {prediction.price_change_pct_history ?? "N/A"}%
@@ -285,7 +287,7 @@ const Insights = ({ user }) => {
           </div>
 
           {/* Short-term reasoning */}
-          <div className="mt-3">
+          <div className={styles.sectionCard}>
             <h5>Short-Term Reasoning</h5>
             <p style={{ marginBottom: 6 }}>
               {prediction.short_term?.reasoning ||
@@ -316,7 +318,7 @@ const Insights = ({ user }) => {
           </div>
 
           {/* Long-Term view */}
-          <div className="mt-3">
+          <div className={styles.sectionCard}>
             <h5>Long-Term Outlook (6-24 months)</h5>
             <p><strong>Recommendation:</strong> {prediction.long_term?.recommendation ?? "N/A"}</p>
             <p><strong>Score:</strong> {prediction.long_term?.score ?? prediction.long_term?.confidence ?? "N/A"}</p>
@@ -342,7 +344,7 @@ const Insights = ({ user }) => {
           </div>
 
           {/* FUNDAMENTALS */}
-          <div className="mt-3">
+          <div className={styles.sectionCard}>
             <h5>Fundamentals</h5>
             <ul>
               <li><strong>Company:</strong> {prediction.fundamentals?.shortName ?? "N/A"}</li>
@@ -544,7 +546,7 @@ const Insights = ({ user }) => {
           )}
 
           {/* Candlestick patterns & Forecast */}
-          <div className="mt-3">
+          <div className={styles.sectionCard}>
             <h5>Candlestick Patterns</h5>
             {prediction.short_term?.candlestick_patterns?.length > 0 ? (
               <ul>
@@ -557,7 +559,7 @@ const Insights = ({ user }) => {
             )}
           </div>
 
-          <div className="mt-3">
+          <div className={styles.sectionCard}>
             <h5>7-Day Forecast (short-term)</h5>
             {prediction.short_term?.forecast_next_days?.length > 0 ? (
               <ul>
