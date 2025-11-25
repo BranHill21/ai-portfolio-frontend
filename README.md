@@ -1,70 +1,284 @@
-# Getting Started with Create React App
+# StockfolioAI Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+StockfolioAI is a modern, full-stack investment analytics application that brings institution-grade predictive insights, automated asset tracking, and financial reasoning to individual users.
 
-## Available Scripts
+This repository contains the React frontend, which serves as the primary user interface for authentication, asset management, and predictive modeling visualization.
 
-In the project directory, you can run:
+The frontend is built with React, React Router, CSS Modules, and a custom dark theme inspired by Apple’s design language.
 
-### `npm start`
+It integrates with a Spring Boot backend and communicates with a Python machine learning inference API.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This README describes the application’s architecture, required environment variables, setup instructions, and production deployment considerations.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Table of Contents
+	1.	Project Overview
+	2.	Features
+	3.	Technology Stack
+	4.	File Structure
+	5.	Environment Variables
+	6.	Running Locally
+	7.	Building for Production
+	8.	Deployment Considerations
+	9.	API Routes Used by the Frontend
+	10.	Styling and Theming Notes
+	11.	Additional Development Notes
+	12.	License
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+### 1. Project Overview
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+StockfolioAI provides market insights generated from machine learning models trained on both long-term and short-term financial indicators.
+Users can create an account, log in, register assets they hold, and receive predictions and reasoning from the analytics engine.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The frontend handles:
+	•	User authentication and session persistence
+	•	Asset CRUD operations (create, read, update, delete)
+	•	Predictive model interactions and data visualization
+	•	Multi-page navigation
+	•	Responsive UI rendering
+	•	Apple-inspired dark mode styling
+	•	Dynamic page behavior based on route and user state
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The application is intended to be deployed as a full production system consisting of:
+	•	React frontend (this repository)
+	•	Spring Boot backend (authentication + asset management)
+	•	Python/ML backend (prediction engine)
 
-### `npm run eject`
+### 2. Features
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+User Authentication
+	•	Login, registration, and persistent sessions via localStorage.
+	•	Protected routes for dashboard and insights pages.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Asset Management
+	•	Add, update, delete, and view tracked assets.
+	•	Pagination and search tools built in.
+	•	Table-based asset interface with modal editing.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Predictive Analytics
+	•	Full and short predictions for stocks/crypto.
+	•	Real-time request to ML API endpoint on insights page.
+	•	Mode selection based on route parameters and user interaction.
+	•	Display of reasoning, sentiment, short-term forecast, long-term forecast, and technical indicators.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Routing
+	•	Dynamic routes for /insights/:symbol?.
+	•	Conditional auto-prediction based on navigation source.
 
-## Learn More
+Styling
+	•	Clean dark theme modeled after modern Apple aesthetics.
+	•	Fully modular CSS using CSS Modules.
+	•	Mobile-friendly responsive design.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 3. Technology Stack
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Frontend
+	•	React 18
+	•	React Router DOM
+	•	Axios for HTTP requests
+	•	CSS Modules for styling
+	•	React Bootstrap (only for modal components, gradually reduced)
 
-### Code Splitting
+Backend Integration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+The frontend expects two backend services:
+	1.	Spring Boot API
+        Used for users, authentication, and asset CRUD.
 
-### Analyzing the Bundle Size
+	2.	Python ML Inference API
+        Used for predictions and reasoning output.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+The URLs for both are configurable via environment variables.
 
-### Making a Progressive Web App
+### 4. File Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+A representative structure:
 
-### Advanced Configuration
+src/
+  api/
+    index.js                # Axios configuration
+  components/
+    NavBar/
+      NavBar.jsx
+      NavBar.module.css
+    ...
+  pages/
+    Login/
+      LoginPage.jsx
+      LoginPage.module.css
+    Register/
+      RegisterPage.jsx
+      RegisterPage.module.css
+    Dashboard/
+      Dashboard.jsx
+      Dashboard.module.css
+    Insights/
+      Insights.jsx
+      Insights.module.css
+  hooks/
+  assets/
+  App.js
+  index.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### 5. Environment Variables
 
-### Deployment
+The frontend requires the following environment variables, placed in a .env file at the root of the project.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+REACT_APP_API_BASE_URL=http://localhost:5000
+REACT_APP_PREDICT_BASE_URL=http://localhost:8080
 
-### `npm run build` fails to minify
+Explanation:
+	•	REACT_APP_API_BASE_URL
+        URL for the Spring Boot backend.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+	•	REACT_APP_PREDICT_BASE_URL
+        URL for the Python ML prediction backend.
+
+All environment variables must begin with REACT_APP_ for Create React App to load them.
+
+### 6. Running Locally
+
+Prerequisites
+
+Install the following:
+	•	Node.js 18+
+	•	npm or yarn
+	•	Access to the backend APIs described above
+
+Steps
+	1.	Clone the repository
+
+git clone https://github.com/yourusername/yourrepo.git
+cd yourrepo
+
+
+	2.	Install dependencies
+
+npm install
+
+
+	3.	Create .env file
+
+REACT_APP_API_BASE_URL=http://localhost:5000
+REACT_APP_PREDICT_BASE_URL=http://localhost:8080
+
+
+	4.	Start development server
+
+npm start
+
+
+
+The frontend will run on http://localhost:3000.
+
+The application requires both backend services to be running in parallel for full functionality.
+
+### 7. Building for Production
+
+To generate a production build:
+
+npm run build
+
+This outputs an optimized build/ directory.
+
+Production Build Includes:
+	•	Minified and tree-shaken JavaScript
+	•	Hashed asset filenames for long-term caching
+	•	Optimized CSS Modules
+	•	Stripped development warnings
+	•	Public folder assets copied into the root of the build
+
+This output can be deployed to:
+	•	Netlify
+	•	Vercel
+	•	AWS Amplify
+	•	GitHub Pages
+	•	Nginx or Apache
+	•	Any static hosting service
+
+⸻
+
+### 8. Deployment Considerations
+
+CORS
+
+Ensure both backends allow requests from the deployed frontend origin.
+
+Environment Variables
+
+In production hosting platforms (Netlify, Vercel), environment variables must be configured through dashboard settings.
+
+Routing
+
+If using Netlify or static hosting, include the following public/_redirects:
+
+/*    /index.html   200
+
+This enables React Router to handle client-side navigation.
+
+⸻
+
+### 9. API Routes Used by the Frontend
+
+User Routes
+
+POST /api/users/login
+POST /api/users/register
+
+Asset Routes
+
+GET    /api/assets/:userId
+POST   /api/assets/create
+PUT    /api/assets/update/:assetId
+DELETE /api/assets/delete/:assetId
+
+Prediction Routes
+
+Provided by the ML backend:
+
+POST /predict
+POST /predict/simple
+
+Payload typically includes:
+
+{
+  "symbol": "AAPL",
+  "buyPrice": 150.23,
+  "quantity": 10
+}
+
+### 10. Styling and Theming Notes
+	•	Entire UI uses custom CSS Modules for page-level styling.
+	•	Global theme follows an Apple-inspired dark mode design.
+	•	Typography, spacing, and shadows are consistent across pages.
+	•	Components like the navbar, login page, register page, dashboard, and insights page each have their own isolated CSS modules.
+	•	React Bootstrap modals are overridden with custom CSS for dark mode appearance.
+	•	No inline styles are used except for layout exceptions that require dynamic calculation.
+
+### 11. Additional Development Notes
+
+Code Style
+	•	Written in functional components with React Hooks.
+	•	Avoids legacy lifecycle methods.
+	•	Uses Axios instances for clean API calls.
+	•	Ensures persistent authentication via localStorage.
+
+Prediction Behavior
+	•	When navigating from the dashboard, the insights page automatically triggers the backend prediction.
+	•	When navigating manually via navbar, predictions do not trigger until the user submits the form.
+	•	Route parsing is used to extract symbol, buyPrice, and quantity parameters.
+
+Future Improvements
+	•	Transition remaining Bootstrap components to fully custom components.
+	•	Add chart animations and transitions.
+	•	Implement more advanced caching for prediction results.
+	•	Add portfolio-level insight aggregation.
+
+### 12. License
+
+This project is licensed under the MIT License.
+You are free to use, modify, and distribute the code with proper attribution.
+
+⸻
+
