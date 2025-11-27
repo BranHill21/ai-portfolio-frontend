@@ -10,6 +10,10 @@ It integrates with a Spring Boot backend and communicates with a Python machine 
 
 This README describes the application’s architecture, required environment variables, setup instructions, and production deployment considerations.
 
+The frontend is currently hosted through Netlify at stockfolioai.netlify.app
+
+Feel free to check it out and provide your user input as it helps improve website for everyone.
+
 ## Table of Contents
 	1.	Project Overview
 	2.	Features
