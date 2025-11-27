@@ -151,26 +151,19 @@ Install the following:
 	•	Access to the backend APIs described above
 
 Steps
-	1.	Clone the repository
-
-git clone https://github.com/yourusername/yourrepo.git
-cd yourrepo
-
-
-	2.	Install dependencies
-
-npm install
-
-
-	3.	Create .env file
+1.	Clone the repository
+    git clone https://github.com/yourusername/yourrepo.git
+    cd yourrepo
+2.	Install dependencies
+    npm install
+3.	Create .env file
 
 REACT_APP_API_BASE_URL=http://localhost:5000
 REACT_APP_PREDICT_BASE_URL=http://localhost:8080
 
+4.	Start development server
 
-	4.	Start development server
-
-npm start
+    npm start
 
 
 
