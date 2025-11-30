@@ -40,6 +40,13 @@ const Dashboard = ({ user, assets, setAssets }) => {
   const [activeAsset, setActiveAsset] = useState(null);
   const [newQuantity, setNewQuantity] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  // ----- USER UPDATE -----
+const [showUserUpdateModal, setShowUserUpdateModal] = useState(false);
+const [updatedUsername, setUpdatedUsername] = useState(user?.username || "");
+const [updatedEmail, setUpdatedEmail] = useState(user?.email || "");
+
+// ----- USER DELETE -----
+const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
 
   // ---------- Fetch Assets ----------
   useEffect(() => {
@@ -130,6 +137,24 @@ const Dashboard = ({ user, assets, setAssets }) => {
 
       <h1 className={styles.title}>Dashboard</h1>
       <p className={styles.subtitle}>Hello, <b>{user.username}</b></p>
+
+      <div className={styles.userActions}>
+  <Button
+    variant="warning"
+    className={styles.actionBtn}
+    // onClick={() => openUserUpdateModal()}
+  >
+    Update Profile
+  </Button>
+
+  <Button
+    variant="danger"
+    className={styles.actionBtn}
+    // onClick={() => setShowDeleteUserModal(true)}
+  >
+    Delete Account
+  </Button>
+</div>
 
       {/* Search */}
       <Form.Control
