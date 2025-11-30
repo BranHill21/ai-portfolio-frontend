@@ -79,12 +79,12 @@ const ExplanationBlock = ({ title, children, open, onToggle }) => (
         style={{
           borderLeft: "3px solid #eee",
           padding: "10px 14px",
-          background: "#fafafa",
+          // background: "#fafafa",
           borderRadius: 4,
         }}
       >
         <h6 style={{ marginTop: 0 }}>{title}</h6>
-        <div style={{ fontSize: 14, lineHeight: 1.5 }}>{children}</div>
+        <div className={styles.sectionCard}>{children}</div>
       </div>
     </Collapse>
   </div>
@@ -299,6 +299,7 @@ const Insights = ({ user }) => {
 
             <ExplanationBlock
               title="Short-term recommendation explained"
+              
               open={openShortExplain}
               onToggle={() => setOpenShortExplain(!openShortExplain)}
             >
@@ -366,7 +367,7 @@ const Insights = ({ user }) => {
                 <li><strong>Market Cap</strong> — company size. Large cap = more stable on average.</li>
                 <li><strong>P/E (Price-to-Earnings)</strong> — how the market values earnings. Very high P/E can mean expensive expectations.</li>
                 <li><strong>Dividend Yield</strong> — yearly dividend as % of price. Provides income if present.</li>
-                <li><strong>Beta</strong> — how volatile compared to the market. Beta /greaterthan 1 = more volatile than market.</li>
+                <li><strong>Beta</strong> — how volatile compared to the market. Beta &gt; 1 = more volatile than market.</li>
               </ul>
             </ExplanationBlock>
           </div>
@@ -471,8 +472,8 @@ const Insights = ({ user }) => {
                     RSI measures how fast price changed recently. Values run 0-100:
                   </p>
                   <ul>
-                    <li><strong>\greaterthan70</strong> — often considered <em>overbought</em> (many buyers recently).</li>
-                    <li><strong>\lessthan30</strong> — often considered <em>oversold</em> (many sellers recently).</li>
+                    <li><strong>&gt;70</strong> - often considered <em>overbought</em> (many buyers recently).</li>
+                    <li><strong>&lt;30</strong> - often considered <em>oversold</em> (many sellers recently).</li>
                     <li>Between 30-70 is neutral. RSI helps spot short-term extremes — not a guaranteed trade signal.</li>
                   </ul>
                 </ExplanationBlock>
