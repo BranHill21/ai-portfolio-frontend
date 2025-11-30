@@ -165,10 +165,16 @@ const Dashboard = ({ user, assets, setAssets }) => {
                   <td>{asset.quantity}</td>
                   <td>${asset.buyPrice}</td>
                   <td>
-                    <Button size="sm" className={styles.actionBtn} onClick={() => openUpdateModal(asset)}>
+                    <Button size="sm" className={styles.actionBtn} onClick={(e) =>{ 
+                      e.stopPropagation();
+                      openUpdateModal(asset);
+                      }}>
                       Update
                     </Button>{" "}
-                    <Button size="sm" variant="danger" className={styles.actionBtn} onClick={() => openDeleteModal(asset)}>
+                    <Button size="sm" variant="danger" className={styles.actionBtn} onClick={(e) =>{ 
+                      e.stopPropagation();
+                      openDeleteModal(asset);
+                      }}>
                       Delete
                     </Button>
                   </td>
