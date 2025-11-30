@@ -15,18 +15,18 @@ The frontend is currently hosted through Netlify at stockfolioai.netlify.app
 Feel free to check it out and provide your user input as it helps improve website for everyone.
 
 ## Table of Contents
-	1.	Project Overview
-	2.	Features
-	3.	Technology Stack
-	4.	File Structure
-	5.	Environment Variables
-	6.	Running Locally
-	7.	Building for Production
-	8.	Deployment Considerations
-	9.	API Routes Used by the Frontend
-	10.	Styling and Theming Notes
-	11.	Additional Development Notes
-	12.	License
+1.	Project Overview
+2.	Features
+3.	Technology Stack
+4.	File Structure
+5.	Environment Variables
+6.	Running Locally
+7.	Building for Production
+8.	Deployment Considerations
+9.	API Routes Used by the Frontend
+10.	Styling and Theming Notes
+11.	Additional Development Notes
+12.	License
 
 
 
@@ -36,53 +36,53 @@ StockfolioAI provides market insights generated from machine learning models tra
 Users can create an account, log in, register assets they hold, and receive predictions and reasoning from the analytics engine.
 
 The frontend handles:
-	•	User authentication and session persistence
-	•	Asset CRUD operations (create, read, update, delete)
-	•	Predictive model interactions and data visualization
-	•	Multi-page navigation
-	•	Responsive UI rendering
-	•	Apple-inspired dark mode styling
-	•	Dynamic page behavior based on route and user state
+•	User authentication and session persistence
+•	Asset CRUD operations (create, read, update, delete)
+•	Predictive model interactions and data visualization
+•	Multi-page navigation
+•	Responsive UI rendering
+•	Apple-inspired dark mode styling
+•	Dynamic page behavior based on route and user state
 
 The application is intended to be deployed as a full production system consisting of:
-	•	React frontend (this repository)
-	•	Spring Boot backend (authentication + asset management)
-	•	Python/ML backend (prediction engine)
+•	React frontend (this repository)
+•	Spring Boot backend (authentication + asset management)
+•	Python/ML backend (prediction engine)
 
 ### 2. Features
 
 User Authentication
-	•	Login, registration, and persistent sessions via localStorage.
-	•	Protected routes for dashboard and insights pages.
+•	Login, registration, and persistent sessions via localStorage.
+•	Protected routes for dashboard and insights pages.
 
 Asset Management
-	•	Add, update, delete, and view tracked assets.
-	•	Pagination and search tools built in.
-	•	Table-based asset interface with modal editing.
+•	Add, update, delete, and view tracked assets.
+•	Pagination and search tools built in.
+•	Table-based asset interface with modal editing.
 
 Predictive Analytics
-	•	Full and short predictions for stocks/crypto.
-	•	Real-time request to ML API endpoint on insights page.
-	•	Mode selection based on route parameters and user interaction.
-	•	Display of reasoning, sentiment, short-term forecast, long-term forecast, and technical indicators.
+•	Full and short predictions for stocks/crypto.
+•	Real-time request to ML API endpoint on insights page.
+•	Mode selection based on route parameters and user interaction.
+•	Display of reasoning, sentiment, short-term forecast, long-term forecast, and technical indicators.
 
 Routing
-	•	Dynamic routes for /insights/:symbol?.
-	•	Conditional auto-prediction based on navigation source.
+•	Dynamic routes for /insights/:symbol?.
+•	Conditional auto-prediction based on navigation source.
 
 Styling
-	•	Clean dark theme modeled after modern Apple aesthetics.
-	•	Fully modular CSS using CSS Modules.
-	•	Mobile-friendly responsive design.
+•	Clean dark theme modeled after modern Apple aesthetics.
+•	Fully modular CSS using CSS Modules.
+•	Mobile-friendly responsive design.
 
 ### 3. Technology Stack
 
 Frontend
-	•	React 18
-	•	React Router DOM
-	•	Axios for HTTP requests
-	•	CSS Modules for styling
-	•	React Bootstrap (only for modal components, gradually reduced)
+•	React 18
+•	React Router DOM
+•	Axios for HTTP requests
+•	CSS Modules for styling
+•	React Bootstrap (only for modal components, gradually reduced)
 
 Backend Integration
 
@@ -274,11 +274,3 @@ Future Improvements
 •	Add chart animations and transitions.
 •	Implement more advanced caching for prediction results.
 •	Add portfolio-level insight aggregation.
-
-### 12. License
-
-This project is licensed under the MIT License.
-You are free to use, modify, and distribute the code with proper attribution.
-
-⸻
-
