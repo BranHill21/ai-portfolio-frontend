@@ -41,12 +41,12 @@ const Dashboard = ({ user, assets, setAssets }) => {
   const [newQuantity, setNewQuantity] = useState("");
   const [newPrice, setNewPrice] = useState("");
   // ----- USER UPDATE -----
-const [showUserUpdateModal, setShowUserUpdateModal] = useState(false);
-const [updatedUsername, setUpdatedUsername] = useState(user?.username || "");
-const [updatedEmail, setUpdatedEmail] = useState(user?.email || "");
+// const [showUserUpdateModal, setShowUserUpdateModal] = useState(false);
+// const [updatedUsername, setUpdatedUsername] = useState(user?.username || "");
+// const [updatedEmail, setUpdatedEmail] = useState(user?.email || "");
 
 // ----- USER DELETE -----
-const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+// const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
 
   // ---------- Fetch Assets ----------
   useEffect(() => {
