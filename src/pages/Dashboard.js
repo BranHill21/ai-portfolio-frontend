@@ -40,17 +40,21 @@ const Dashboard = ({ user, assets, setAssets }) => {
   const [activeAsset, setActiveAsset] = useState(null);
   const [newQuantity, setNewQuantity] = useState("");
   const [newPrice, setNewPrice] = useState("");
-  // ----- USER UPDATE -----
-// const [showUserUpdateModal, setShowUserUpdateModal] = useState(false);
-// const [updatedUsername, setUpdatedUsername] = useState(user?.username || "");
-// const [updatedEmail, setUpdatedEmail] = useState(user?.email || "");
+  // ---------- USER UPDATE ----------
+  const [showUserUpdateModal, setShowUserUpdateModal] = useState(false);
+  const [updatedUsername, setUpdatedUsername] = useState(user?.username || "");
+  const [updatedEmail, setUpdatedEmail] = useState(user?.email || "");
+  const [updatedPassword, setUpdatedPassword] = useState("");
 
-// ----- USER DELETE -----
-// const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+  // ---------- USER DELETE ----------
+  const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
 
   // ---------- Fetch Assets ----------
   useEffect(() => {
     if (!user) return;
+
+    setUpdatedUsername(user.username);
+    setUpdatedEmail(user.email);
 
     const expires = localStorage.getItem("assets_expires");
     if (assets && expires && Date.now() < Number(expires)) return;
@@ -123,6 +127,45 @@ const Dashboard = ({ user, assets, setAssets }) => {
     }
   };
 
+  const confirmUserUpdate = async () => {
+    try {
+      const payload = {
+        username: updatedUsername,
+        email: updatedEmail
+      };
+
+      if (updatedPassword.trim()) {
+        payload.password = updatedPassword;
+      }
+
+      const res = await API.put(`/api/users/${user.id}`, payload);
+
+      localStorage.setItem("user", JSON.stringify(res.data));
+      setUpdatedPassword("");
+      setShowUserUpdateModal(false);
+
+      showAlert("Profile updated successfully");
+      window.location.reload(); // ensures navbar + state sync
+    } catch (err) {
+      console.error("User update failed:", err);
+      showAlert("Profile update failed", "danger");
+    }
+  };
+
+  const confirmUserDelete = async () => {
+    try {
+      await API.delete(`/api/users/${user.id}`);
+
+      localStorage.clear();
+      setAssets(null);
+
+      navigate("/");
+    } catch (err) {
+      console.error("User delete failed:", err);
+      showAlert("Account deletion failed", "danger");
+    }
+  };
+
   if (!user) return <p>Please log in.</p>;
 
   return (
@@ -139,22 +182,22 @@ const Dashboard = ({ user, assets, setAssets }) => {
       <p className={styles.subtitle}>Hello, <b>{user.username}</b></p>
 
       <div className={styles.userActions}>
-  <Button
-    variant="warning"
-    className={styles.actionBtn}
-    // onClick={() => openUserUpdateModal()}
-  >
-    Update Profile
-  </Button>
+        <Button
+          variant="warning"
+          className={styles.actionBtn}
+          onClick={() => setShowUserUpdateModal(true)}
+        >
+          Update Profile
+        </Button>
 
-  <Button
-    variant="danger"
-    className={styles.actionBtn}
-    // onClick={() => setShowDeleteUserModal(true)}
-  >
-    Delete Account
-  </Button>
-</div>
+        <Button
+          variant="danger"
+          className={styles.actionBtn}
+          onClick={() => setShowDeleteUserModal(true)}
+        >
+          Delete Account
+        </Button>
+      </div>
 
       {/* Search */}
       <Form.Control
@@ -269,6 +312,66 @@ const Dashboard = ({ user, assets, setAssets }) => {
           </Button>
           <Button variant="danger" onClick={confirmDelete}>
             Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showUserUpdateModal} onHide={() => setShowUserUpdateModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Profile</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <Form.Group className="mb-2">
+            <label>Username</label>
+            <Form.Control
+              value={updatedUsername}
+              onChange={(e) => setUpdatedUsername(e.target.value)}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-2">
+            <label>Email</label>
+            <Form.Control
+              type="email"
+              value={updatedEmail}
+              onChange={(e) => setUpdatedEmail(e.target.value)}
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <label>New Password (optional)</label>
+            <Form.Control
+              type="password"
+              value={updatedPassword}
+              onChange={(e) => setUpdatedPassword(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowUserUpdateModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={confirmUserUpdate}>Save Changes</Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showDeleteUserModal} onHide={() => setShowDeleteUserModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Account</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          This action is permanent. Are you sure you want to delete your account?
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteUserModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmUserDelete}>
+            Delete Account
           </Button>
         </Modal.Footer>
       </Modal>
