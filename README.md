@@ -1,5 +1,8 @@
 # StockfolioAI Frontend
 
+[Link to Backend](https://github.com/BranHill21/ai-portfolio-backend)
+[Link to ML service](https://github.com/BranHill21/ai-portfolio-mlservice)
+
 StockfolioAI is a modern, full-stack investment analytics application that brings institution-grade predictive insights, automated asset tracking, and financial reasoning to individual users.
 
 This repository contains the React frontend, which serves as the primary user interface for authentication, asset management, and predictive modeling visualization.
